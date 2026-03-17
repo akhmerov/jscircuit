@@ -62,8 +62,16 @@ export class QucatNetlistAdapter {
 
     /**
      * Internal: Serialize elements into .qucat netlist lines.
-     * Converts pixel coordinates to logical coordinates for compact file format.
-     * 
+     * Converts pixel coordinates to v1.0 grid coordinates for QuCat Python compatibility.
+     * Pipeline: pixel → v2.0 grid → v1.0 grid
+     *
+     * Ground convention for QuCat:
+     * - pos1 = "minus" node (ground body / triple-line side)
+     * - pos2 = "plus" node  (connection stick)
+     *
+     * JSCircuit stores ground with nodes[0] as the connection point.
+     * This adapter remaps to QuCat convention during export.
+     *
      * @param {Array<Object>} elements - Serialized element objects.
      * @returns {string} Netlist string content.
      */
@@ -75,15 +83,29 @@ export class QucatNetlistAdapter {
             const shortType = elementTypeToShortCode[type];
             if (!shortType) throw new Error(`Unknown element type: ${type}`);
 
-            // Convert pixel coordinates to logical coordinates
+            // Convert pixel coordinates → v2.0 grid → v1.0 grid
             const pixelPos1 = new Position(nodes[0].x, nodes[0].y);
             const pixelPos2 = new Position(nodes[1].x, nodes[1].y);
             
-            const logical1 = CoordinateAdapter.pixelToGrid(pixelPos1);
-            const logical2 = CoordinateAdapter.pixelToGrid(pixelPos2);
+            const v2Grid1 = CoordinateAdapter.pixelToGrid(pixelPos1);
+            const v2Grid2 = CoordinateAdapter.pixelToGrid(pixelPos2);
 
-            const node1 = `${logical1.x},${logical1.y}`;
-            const node2 = `${logical2.x},${logical2.y}`;
+            let v1Grid1 = CoordinateAdapter.v2ToV1Grid(v2Grid1);
+            let v1Grid2 = CoordinateAdapter.v2ToV1Grid(v2Grid2);
+
+            // Ground export remapping (QuCat minus/plus convention)
+            // JSCircuit: nodes[0] = connection (circuit junction), nodes[1] = phantom (body/earth end)
+            // QuCat:     pos1 = minus (body/earth),                pos2 = plus (connection)
+            // The phantom node IS the body end, so simply swap the two positions.
+            if (shortType === 'G') {
+                const body = v1Grid2;       // phantom end → QuCat body (pos1)
+                const connection = v1Grid1; // circuit node → QuCat connection (pos2)
+                v1Grid1 = body;
+                v1Grid2 = connection;
+            }
+
+            const node1 = `${v1Grid1.x},${v1Grid1.y}`;
+            const node2 = `${v1Grid2.x},${v1Grid2.y}`;
 
             // Get the main property for this element type
             const mapEntry = typeMap[shortType];
@@ -157,7 +179,12 @@ export class QucatNetlistAdapter {
                 pixelPos2 = CoordinateAdapter.gridToPixel(logicalPos2);
             }
             
-            const nodes = [pixelPos1, pixelPos2];
+            // Ground import remapping (reverse of export convention)
+            // QuCat:     pos1 = minus (body/earth),  pos2 = plus (connection)
+            // JSCircuit: nodes[0] = connection,       nodes[1] = phantom (body/earth)
+            const nodes = (shortType === 'G')
+                ? [pixelPos2, pixelPos1]   // swap: connection first, body second
+                : [pixelPos1, pixelPos2];
     
             // Parse the main property value
             const raw = valueStr?.trim();
@@ -169,6 +196,20 @@ export class QucatNetlistAdapter {
             const propObj = {};
             if (propertyKey) {
                 propObj[propertyKey] = parsedValue; // undefined if no value was serialized
+            }
+
+            // Compute ground orientation from netlist geometry
+            // GroundRenderer default (0°) draws body LEFT, connection RIGHT.
+            // body→connection direction at 0° is (1,0) with angle 0.
+            // So atan2(dy, dx) of body→connection vector gives orientation directly.
+            // Canvas rotate: 0°=body LEFT, 90°=body UP, 180°=body RIGHT, 270°=body DOWN.
+            if (shortType === 'G') {
+                const dx = pixelPos2.x - pixelPos1.x;
+                const dy = pixelPos2.y - pixelPos1.y;
+                const radians = Math.atan2(dy, dx);
+                let orientation = Math.round(radians * 180 / Math.PI);
+                if (orientation < 0) orientation += 360;
+                propObj.orientation = orientation;
             }
 
             // Create Properties instance (ElementRegistry will add defaults)
