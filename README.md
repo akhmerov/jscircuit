@@ -69,6 +69,29 @@ To run the project locally for development:
     Produces a single self-contained `dist/jscircuit.html` with all JS and assets inlined.
     This file can be included in the QuCat Python package or served from any static host.
 
+
+### Jupyter / anywidget packaging
+
+JSCircuit now includes a small `anywidget` wrapper so the editor can be embedded directly in notebooks. Build the browser assets and then install the Python package in editable mode:
+
+```bash
+npm run build
+pip install -e .
+```
+
+Example notebook usage:
+
+```python
+from jscircuit_anywidget import JSCircuitWidget
+
+widget = JSCircuitWidget(height="620px", theme="auto")
+widget
+```
+
+The widget synchronizes `netlist`, `snapshot`, `height`, `theme`, and `element_count` trait values, making it easy to round-trip circuits between Python and the browser UI.
+
+A browser-only JupyterLite walkthrough is also available in the docs at [**JupyterLite Demo**](https://qucat.github.io/jscircuit/tutorial-jupyterlite-demo.html).
+
 ### Documentation
 
 -   **[Extension Guide](https://qucat.github.io/jscircuit/tutorial-extension-integration-tutorial.html)**: Learn how to add custom elements.

@@ -144,6 +144,7 @@ export class GUIAdapter {
      * @type {!GUICommandRegistry}
      */
     this.guiCommandRegistry = guiCommandRegistry;
+    this.eventTarget = _controls?.closest?.(".jsc-root") || document;
 
     /**
      * @private
@@ -229,7 +230,7 @@ export class GUIAdapter {
    * Unhook global listeners (useful for hot-reload/tests).
    */
   dispose() {
-    if (this._onMenuAction) document.removeEventListener("ui:action", this._onMenuAction);
+    if (this._onMenuAction) this.eventTarget.removeEventListener("ui:action", this._onMenuAction);
     if (this._onKeydown) document.removeEventListener("keydown", this._onKeydown);
     if (this._onWheel) this.canvas.removeEventListener("wheel", this._onWheel);
     if (this._onImageLoaded) document.removeEventListener("renderer:imageLoaded", this._onImageLoaded);
@@ -245,7 +246,7 @@ export class GUIAdapter {
    */
   bindMenu() {
     this._onMenuAction = (e) => this.handleAction(e.detail.id);
-    document.addEventListener("ui:action", this._onMenuAction);
+    this.eventTarget.addEventListener("ui:action", this._onMenuAction);
   }
 
   /**
