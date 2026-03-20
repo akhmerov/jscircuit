@@ -144,11 +144,12 @@ export class MenuBar {
   /**
    * @param {!HTMLElement} mount Root element where the menubar is rendered.
    */
-  constructor(mount){
+  constructor(mount, { eventTarget = document } = {}){
     /** @private @const {!HTMLElement} */
     this.mount = mount;
     /** @private @type {!Array<!HTMLElement>} */
     this.buttons = [];
+    this.eventTarget = eventTarget;
     /** @private @type {number} */
     this.openIndex = -1;
 
@@ -166,6 +167,7 @@ export class MenuBar {
     this.mount.classList.add('menubar'); // in case the host element didn't have it
     this.mount.innerHTML = '';
     this.buttons = [];
+    this.eventTarget = eventTarget;
 
     if (cfg.brand){
       const b = document.createElement('div');
@@ -211,7 +213,7 @@ export class MenuBar {
       if (!el || el.dataset.type === 'separator') return;
       if (el.getAttribute('aria-disabled') === 'true') return;
       this.closeAll();
-      document.dispatchEvent(new CustomEvent('ui:action', { detail: { id: el.dataset.id }}));
+      this.eventTarget.dispatchEvent(new CustomEvent('ui:action', { detail: { id: el.dataset.id }, bubbles: true }));
     });
 
     // Keyboard navigation within the panel.

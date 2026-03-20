@@ -12,9 +12,9 @@
 
   **Start designing quantum circuits in your browser right away with jscircuit for your simulations**
   
-  [![GitHub](https://img.shields.io/badge/GitHub-View%20Source-blue?style=for-the-badge&logo=github)](https://github.com/jurra/qucat-circuit-generator)
-  [![App](https://img.shields.io/badge/Demo-Try%20Live-success?style=for-the-badge&logo=codesandbox)](app/jscircuit.html)
-  [![Docs](https://img.shields.io/badge/Docs-Getting%20Started-orange?style=for-the-badge&logo=gitbook)](tutorial-getting-started.html)
+  [![GitHub](https://img.shields.io/badge/GitHub-View%20Source-blue?style=for-the-badge&logo=github)](https://github.com/qucat/jscircuit)
+  [![App](https://img.shields.io/badge/Demo-Try%20Live-success?style=for-the-badge&logo=codesandbox)](https://qucat.github.io/jscircuit/app/jscircuit.html)
+  [![Docs](https://img.shields.io/badge/Docs-Getting%20Started-orange?style=for-the-badge&logo=gitbook)](https://qucat.github.io/jscircuit/tutorial-getting-started.html)
 </div>
 
 
@@ -22,6 +22,8 @@
 ---
 
 **JSCircuit** is a lightweight, web-based circuit editor designed to generate netlists for **QuCat** simulations. It runs entirely in the browser, offering a modern alternative to desktop-based editors.
+
+[**Get started right away with JSCircuit**](https://qucat.github.io/jscircuit/tutorial-getting-started.html)
 
 ### Why JSCircuit?
 
@@ -36,7 +38,9 @@ The project was built to solve two key challenges in the quantum circuit simulat
 ## Key Features
 
 -   **Zero Installation**: Runs instantly in any modern web browser.
+-   **Self-Contained**: Ships as a single HTML file— no external dependencies.
 -   **QuCat Compatible**: Generates netlist files ready for QuCat simulations.
+-   **Clipboard Workflow**: Copy netlists out (Ctrl+Shift+C) and paste them in (Ctrl+Shift+V).
 -   **Embeddable**: Designed to work within Jupyter Notebooks and web applications.
 -   **Dependency-Free**: Built with native ES6 JavaScript, requiring no heavy frameworks.
 -   **Extensible**: Professional architecture allowing easy addition of new components.
@@ -49,8 +53,8 @@ To run the project locally for development:
 
 1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/jurra/qucat-circuit-generator.git
-    cd qucat-circuit-generator
+    git clone https://github.com/qucat/jscircuit.git
+    cd jscircuit
     ```
 
 2.  **Install dependencies**:
@@ -58,22 +62,57 @@ To run the project locally for development:
     npm install
     ```
 
-3.  **Build and Serve**:
+3.  **Build and Serve** (development):
     ```bash
     npm run serve
     ```
     This will bundle the application and start a local server at `http://127.0.0.1:8080`.
 
+4.  **Build Standalone** (distribution):
+    ```bash
+    npm run build:standalone
+    ```
+    Produces a single self-contained `dist/jscircuit.html` with all JS and assets inlined.
+    This file can be included in the QuCat Python package or served from any static host.
+
+
+### Jupyter / anywidget packaging
+
+JSCircuit now includes a small `anywidget` wrapper so the editor can be embedded directly in notebooks. Build the browser assets and then install the Python package in editable mode:
+
+```bash
+npm run build
+pip install -e .
+```
+
+Example notebook usage:
+
+```python
+from jscircuit_anywidget import JSCircuitWidget
+
+widget = JSCircuitWidget(height="620px", theme="auto")
+widget
+```
+
+The widget synchronizes `netlist`, `snapshot`, `height`, `theme`, and `element_count` trait values, making it easy to round-trip circuits between Python and the browser UI.
+
+A browser-only JupyterLite walkthrough is also available in the docs at [**JupyterLite Demo**](https://qucat.github.io/jscircuit/tutorial-jupyterlite-demo.html).
+
 ### Documentation
 
--   **[Extension Guide](tutorial-extension-guide.html)**: Learn how to add custom elements.
--   **[Architecture](tutorial-overview.html)**: Understand the system design.
--   **[API Reference](index.html)**: Detailed code documentation.
+-   **[Extension Guide](https://qucat.github.io/jscircuit/tutorial-extension-integration-tutorial.html)**: Learn how to add custom elements.
+-   **[API Reference](https://qucat.github.io/jscircuit/index.html)**: Detailed code documentation.
 
 ##  Build the documentation locally
 ```bash
 npm run docs:serve
 ```
+
+## Acknowledgments
+
+This project builds upon the original QuCat GUI developed by **Mario Gely**, which provided the foundational concepts for circuit visualization and interaction as a reference to develop this application.
+
+We acknowledge the support of the **TU Delft Digital Competence Center** in advancing this project.
 
 ## Licensed under the MIT License.
 

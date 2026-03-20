@@ -38,12 +38,12 @@ function expandComponentReferences(guiConfig) {
   return { ...guiConfig, menus: expandedMenus };
 }
 
-export function initMenu() {
+export function initMenu({ mount = document.getElementById("menubar"), eventTarget = document } = {}) {
   // Configuration is now statically imported at build time
   // No runtime fetch needed - fully embedded in bundle
   const expandedConfig = expandComponentReferences(guiConfig);
   
-  const menu = new MenuBar(document.getElementById("menubar"));
+  const menu = new MenuBar(mount, { eventTarget });
   menu.renderFromConfig(expandedConfig);
 
   // Note: Keyboard shortcuts are handled by GUIAdapter.bindShortcuts()

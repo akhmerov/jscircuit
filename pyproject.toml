@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jscircuit-anywidget"
+version = "0.1.0"
+description = "AnyWidget packaging for the JSCircuit QuCat editor"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "anywidget>=0.9.13",
+  "traitlets>=5.10.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "python"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["python"]
+
+[tool.setuptools.package-data]
+jscircuit_anywidget = ["static/*.js"]
